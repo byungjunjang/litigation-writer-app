@@ -32,6 +32,21 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/mcp/korean-law/[transport]": mcpDeps.map((d) => `./node_modules/${d}/**/*`),
   },
+  // kordoc 의 optionalDependencies(수식 OCR용 onnxruntime·transformers·sharp·pdfium)는
+  // formula-*.js 의 동적 import 를 추적기가 따라가 함수에 딸려 들어온다(~290MB).
+  // 법령 조회 경로는 이를 쓰지 않으므로 소스맵과 함께 뺀다. Function storage 는
+  // 보존 중인 배포 수만큼 곱해지므로 함수 크기가 곧 무료 한도 소진 속도다.
+  outputFileTracingExcludes: {
+    "/api/mcp/korean-law/[transport]": [
+      "./node_modules/onnxruntime-node/**/*",
+      "./node_modules/onnxruntime-common/**/*",
+      "./node_modules/@huggingface/**/*",
+      "./node_modules/@img/**/*",
+      "./node_modules/sharp/**/*",
+      "./node_modules/@hyzyla/**/*",
+      "./node_modules/**/*.map",
+    ],
+  },
 };
 
 export default nextConfig;
