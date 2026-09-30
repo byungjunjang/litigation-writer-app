@@ -116,6 +116,9 @@ describe("세션·이벤트·파일 요청 형상", () => {
                 ],
               },
               { id: "sevt_3", type: "agent.tool_use", name: "bash", input: { command: "ls" } },
+              { id: "sevt_t1", type: "agent.thinking" },
+              { id: "sevt_t2", type: "agent.thinking", content: [{ type: "thinking", thinking: "" }] },
+              { id: "sevt_t3", type: "agent.thinking", content: [{ type: "thinking", thinking: "판례를 찾았습니다. 원문을 확인합니다." }] },
               { id: "sevt_4", type: "session.status_idle" },
             ],
           });
@@ -154,6 +157,8 @@ describe("세션·이벤트·파일 요청 형상", () => {
       { id: "sevt_1", at: null, type: "status_running" },
       { id: "sevt_2", at: "2026-07-22T01:00:00Z", type: "message", text: "안녕하세요" },
       { id: "sevt_3", at: null, type: "tool_use", name: "bash", inputSummary: '{"command":"ls"}' },
+      // 내용 없는 agent.thinking(문서상 기본 형상)은 버리고, 텍스트가 실린 것만 진행 노트가 된다
+      { id: "sevt_t3", at: null, type: "progress", text: "판례를 찾았습니다. 원문을 확인합니다." },
       { id: "sevt_4", at: null, type: "status_idle" },
     ]);
   });

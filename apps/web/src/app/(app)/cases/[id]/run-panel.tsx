@@ -114,7 +114,7 @@ export function RunPanel({
 }) {
   const router = useRouter();
   const [items, setItems] = useState<TimelineItem[]>([]);
-  const [cost, setCost] = useState<number | null>(null);
+  const [cost, setCost] = useState<{ usd: number | null } | null>(null); // usd null = 요율 미등록 모델
   const [advice, setAdvice] = useState<string[] | null>(null);
   const [busy, setBusy] = useState(false);
   const esRef = useRef<EventSource | null>(null);
@@ -131,7 +131,7 @@ export function RunPanel({
           if (last && last.text === e.text) return prev; // 동일 문구 반복은 한 줄로 유지
           return [...prev.map((p) => ({ ...p, state: "done" as const })), { text: e.text, state: "running" }];
         });
-      } else if (e.kind === "cost") setCost(e.usd);
+      } else if (e.kind === "cost") setCost({ usd: e.usd });
       else if (e.kind === "advice") setAdvice(e.lines);
       else if (e.kind === "status") {
         es.close();
@@ -187,9 +187,11 @@ export function RunPanel({
           submitting={busy}
           items={items.length > 0 ? items : [{ text: "세션 준비 중…", state: "running" }]}
           footer={
-            cost !== null
-              ? `추정 비용 $${cost.toFixed(2)} · idle 대기 중에는 과금되지 않습니다`
-              : "idle 대기 중에는 과금되지 않습니다"
+            cost === null
+              ? "idle 대기 중에는 과금되지 않습니다"
+              : cost.usd === null
+                ? "추정 비용 — 요율 미등록 모델 · idle 대기 중에는 과금되지 않습니다"
+                : `추정 비용 $${cost.usd.toFixed(2)} · idle 대기 중에는 과금되지 않습니다`
           }
           onCancel={async () => {
             if (busy) return;

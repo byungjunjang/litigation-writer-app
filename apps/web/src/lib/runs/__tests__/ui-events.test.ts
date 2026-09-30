@@ -29,6 +29,11 @@ describe("toUiEvents", () => {
     expect(evs).toEqual([]);
   });
 
+  it("progress(thinking 블록 진행 노트) → timeline 한 줄", () => {
+    const evs = toUiEvents({ id: "e4", at: null, type: "progress", text: "판례를 검색합니다." }, { live: false });
+    expect(evs).toEqual([{ kind: "timeline", id: "e4", text: "판례를 검색합니다.", state: "done" }]);
+  });
+
   it("status/checkpoint 계열은 timeline 생성 안 함", () => {
     expect(toUiEvents({ id: "e3", at: null, type: "status_idle" }, { live: true })).toEqual([]);
   });

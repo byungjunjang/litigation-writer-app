@@ -9,6 +9,13 @@ describe("prompts", () => {
     expect(SYSTEM_PROMPT).toContain("/mnt/session/outputs");
   });
 
+  it("시스템 프롬프트에 안전수칙 5조가 모두 있다 (원본: litigation-writer/CLAUDE.md)", () => {
+    for (const rule of ["사실 생성 금지", "인용 단일 진입로", "모르면 확인필요", "검증 게이트", "렌더 전 키 검사"]) {
+      expect(SYSTEM_PROMPT).toContain(rule);
+    }
+    expect(SYSTEM_PROMPT).toContain("제출 금지");
+  });
+
   it("draft 킥오프는 라운드 종류에 따라 스킬이 갈린다", () => {
     expect(buildKickoffPrompt({ stage: "draft", roundKind: "소장" })).toContain("draft-complaint");
     expect(buildKickoffPrompt({ stage: "draft", roundKind: "준비서면" })).toContain("draft-brief");

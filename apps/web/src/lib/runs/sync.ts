@@ -1,6 +1,6 @@
 import type { AgentRuntime, RuntimeEvent } from "@/lib/agent/adapter";
 import { parseCheckpoint, parseRunComplete } from "@/lib/agent/protocol";
-import { computeRunningMs, estimateRunCost, estimateTokens } from "@/lib/agent/usage";
+import { computeRunningMs, estimateRunCostCeiling, estimateTokens } from "@/lib/agent/usage";
 import type { RunStore } from "@/lib/runs/store";
 
 export type RunDeps = {
@@ -41,7 +41,8 @@ export async function syncRun(deps: RunDeps, runId: string): Promise<{ status: s
   const events = await runtime.listEvents(run.agent_session_id);
   const outputTokens = events.reduce((n, e) => (e.type === "message" ? n + estimateTokens(e.text) : n), 0);
   const runningMs = computeRunningMs(events, new Date().toISOString());
-  const cost = estimateRunCost({ outputTokens, runningMs, model });
+  // 상한 판정·기록은 보수 추정치(요율 미등록 모델은 최고 요율)로 — 화면 표시는 stream 경로가 "요율 미등록"으로 드러낸다.
+  const cost = estimateRunCostCeiling({ outputTokens, runningMs, model });
   await store.updateRun(runId, { output_tokens: outputTokens, cost_usd: cost }, { onlyIfStatus: ACTIVE });
 
   const idle = isIdle(events);

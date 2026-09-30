@@ -49,7 +49,7 @@ type RawEvent = {
   id: string;
   type: string;
   processed_at?: string;
-  content?: { type: string; text?: string }[];
+  content?: { type: string; text?: string; thinking?: string }[];
   name?: string;
   input?: unknown;
   message?: string;
@@ -70,6 +70,16 @@ function toRuntimeEvent(raw: RawEvent): RuntimeEvent | null {
         .map((c) => c.text ?? "")
         .join("");
       return { id: raw.id, at, type: "message", text };
+    }
+    case "agent.thinking": {
+      // Sonnet 5.5·Opus 5.5·Fable 5.1은 도구 호출 사이의 서술을 text가 아닌 thinking 블록으로 낸다.
+      // Managed Agents 문서상 agent.thinking은 내용 없는 진행 신호이고 에이전트 구성에 thinking.display
+      // 설정도 없다 — 그래서 요청 쪽 플래그는 두지 않고, 내용이 실려 오는 경우에만 진행 노트로 표시한다.
+      const text = (raw.content ?? [])
+        .map((c) => (c.type === "thinking" ? c.thinking : c.type === "text" ? c.text : undefined) ?? "")
+        .join("")
+        .trim();
+      return text ? { id: raw.id, at, type: "progress", text } : null;
     }
     case "agent.tool_use":
       return {
