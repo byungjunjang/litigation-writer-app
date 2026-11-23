@@ -68,3 +68,16 @@ jobs:
           else
             echo "::notice::mode=${mode} · last_ping_at=$(jq -r '.lastPingAt // "?"' body.json) · count=$(jq -r '.pingCount // "?"' body.json)"
           fi
+
+  # push 가 60일 없으면 스케줄이 꺼진다(스케줄 실행 자체는 활동으로 안 친다).
+  # enable API 를 스스로 호출해 커밋 없이 그 타이머를 리셋한다.
+  stay-enabled:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      actions: write
+    steps:
+      - run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/supabase-keepalive.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}
